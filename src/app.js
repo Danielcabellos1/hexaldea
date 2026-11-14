@@ -95,9 +95,11 @@
   function render() {
     if (renderQueued) return;
     renderQueued = true;
-    var run = function () { renderQueued = false; try { draw(); } catch (e) { console.error(e); } };
-    // en segundo plano el navegador no dibuja fotogramas: entonces se usa un temporizador
-    if (document.hidden) setTimeout(run, 30); else requestAnimationFrame(run);
+    var done = false;
+    var run = function () { if (done) return; done = true; renderQueued = false; try { draw(); } catch (e) { console.error(e); } };
+    // algunos navegadores (pestañas en segundo plano, paneles incrustados) no dan fotogramas: el temporizador lo garantiza
+    if (!document.hidden) requestAnimationFrame(run);
+    setTimeout(run, document.hidden ? 30 : 60);
   }
   function resetUi() {
     ui.sheet = null; ui.mode = null; ui.pick = null; ui.give = {}; ui.want = {}; ui.bg = null; ui.bt = null; ui.disc = {}; ui.p2 = []; ui.m1 = null;
